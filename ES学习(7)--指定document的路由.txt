@@ -1,0 +1,14 @@
+document路由请求的过程和原理：
+1.当客户端向ES集群发送一个请求时，会有coordinate node(协调节点)接收请求，根据路由计算请求对应的节点后将请求转发过去。
+2.当真正处理的节点处理完后，将相应数据发到coordinate node(协调节点)上，再转到客户端
+3.对于读请求，可以将请求转发到primary shard上，也可以转发到replica shard 上，因为replica shard是可以服务所有的读请求的。
+4.es内部采用round-robin随机轮询算法。比如，coordinate node接收到了对一个document的4次查询，就会使用算法，将2次查询请求转发到对应primary shard上，2次转发到replica shard上。
+尽量让primary shard 和replica shard 均匀的服务读请求，得到负载均衡的效果
+
+
+
+路由计算方式：
+1.每个document的routing(路由)默认是_id。
+2.可以指定document的routing值。语法 PUT test_index/test_type/1?routing=12
+3.document路由公式:    hash(routing)%number_of_primary_shard
+
